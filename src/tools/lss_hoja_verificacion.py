@@ -4,156 +4,156 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
-class HojaVerificacion:
+class CheckSheet:
     def __init__(self):
-        # Inicialización de variables de estado
-        if 'hoja_verificacion' not in st.session_state:
-            st.session_state.hoja_verificacion = None
-        if 'datos_hoja' not in st.session_state:
-            st.session_state.datos_hoja = None
+        # Initialize session state variables
+        if 'check_sheet' not in st.session_state:
+            st.session_state.check_sheet = None
+        if 'sheet_data' not in st.session_state:
+            st.session_state.sheet_data = None
 
-    def crear_hoja_verificacion(self):
+    def create_check_sheet(self):
         """
-        Crear una nueva hoja de verificación con configuración personalizada
+        Create a new check sheet with custom configuration
         """
-        st.subheader("🛠 Crear Hoja de Verificación")
+        st.subheader("🛠 Create Check Sheet")
         
-        # Tipos de hojas de verificación
-        tipos_hoja = [
-            "Conteo de Defectos",
-            "Registro de Eventos",
-            "Control de Proceso",
-            "Análisis de Frecuencia"
+        # Types of check sheets
+        sheet_types = [
+            "Defect Count",
+            "Event Log",
+            "Process Control",
+            "Frequency Analysis"
         ]
         
-        # Selección de tipo de hoja
-        tipo_hoja = st.selectbox("Seleccione el Tipo de Hoja", tipos_hoja)
+        # Sheet type selection
+        sheet_type = st.selectbox("Select Sheet Type", sheet_types)
         
-        # Configuración de campos
-        num_campos = st.number_input("Número de Campos", min_value=1, max_value=10, value=3)
+        # Field configuration
+        num_fields = st.number_input("Number of Fields", min_value=1, max_value=10, value=3)
         
-        campos = []
-        for i in range(num_campos):
+        fields = []
+        for i in range(num_fields):
             col1, col2 = st.columns(2)
             with col1:
-                nombre_campo = st.text_input(f"Nombre del Campo {i+1}")
+                field_name = st.text_input(f"Field Name {i+1}")
             with col2:
-                tipo_campo = st.selectbox(f"Tipo de Dato Campo {i+1}", 
-                                          ["Texto", "Numérico", "Categoría", "Fecha"])
+                field_type = st.selectbox(f"Field Type {i+1}", 
+                                          ["Text", "Numeric", "Category", "Date"])
             
-            campos.append({
-                "nombre": nombre_campo,
-                "tipo": tipo_campo
+            fields.append({
+                "name": field_name,
+                "type": field_type
             })
         
-        # Botón para crear hoja
-        if st.button("Crear Hoja de Verificación"):
-            st.session_state.hoja_verificacion = {
-                "tipo": tipo_hoja,
-                "campos": campos
+        # Button to create the check sheet
+        if st.button("Create Check Sheet"):
+            st.session_state.check_sheet = {
+                "type": sheet_type,
+                "fields": fields
             }
-            st.success("Hoja de Verificación creada exitosamente")
+            st.success("Check sheet created successfully")
 
-    def ingresar_datos(self):
+    def input_data(self):
         """
-        Interfaz para ingresar datos en la hoja de verificación
+        Interface to enter data into the check sheet
         """
-        if st.session_state.hoja_verificacion is None:
-            st.warning("Primero debe crear una Hoja de Verificación")
+        if st.session_state.check_sheet is None:
+            st.warning("First, you must create a Check Sheet")
             return
 
-        st.subheader("📝 Ingresar Datos")
+        st.subheader("📝 Enter Data")
         
-        # Preparar estructura de datos
-        datos = {}
-        for campo in st.session_state.hoja_verificacion['campos']:
-            if campo['tipo'] == 'Texto':
-                datos[campo['nombre']] = st.text_input(campo['nombre'])
-            elif campo['tipo'] == 'Numérico':
-                datos[campo['nombre']] = st.number_input(campo['nombre'])
-            elif campo['tipo'] == 'Categoría':
-                opciones = st.text_input(f"Opciones para {campo['nombre']} (separadas por coma)")
-                datos[campo['nombre']] = st.selectbox(campo['nombre'], opciones.split(','))
-            elif campo['tipo'] == 'Fecha':
-                datos[campo['nombre']] = st.date_input(campo['nombre'])
+        # Prepare data structure
+        data = {}
+        for field in st.session_state.check_sheet['fields']:
+            if field['type'] == 'Text':
+                data[field['name']] = st.text_input(field['name'])
+            elif field['type'] == 'Numeric':
+                data[field['name']] = st.number_input(field['name'])
+            elif field['type'] == 'Category':
+                options = st.text_input(f"Options for {field['name']} (comma-separated)")
+                data[field['name']] = st.selectbox(field['name'], options.split(','))
+            elif field['type'] == 'Date':
+                data[field['name']] = st.date_input(field['name'])
         
-        # Botón para guardar datos
-        if st.button("Guardar Datos"):
-            if st.session_state.datos_hoja is None:
-                st.session_state.datos_hoja = pd.DataFrame(columns=[campo['nombre'] for campo in st.session_state.hoja_verificacion['campos']])
+        # Button to save data
+        if st.button("Save Data"):
+            if st.session_state.sheet_data is None:
+                st.session_state.sheet_data = pd.DataFrame(columns=[field['name'] for field in st.session_state.check_sheet['fields']])
             
-            nuevos_datos = pd.DataFrame([datos])
-            st.session_state.datos_hoja = pd.concat([st.session_state.datos_hoja, nuevos_datos], ignore_index=True)
-            st.success("Datos guardados exitosamente")
+            new_data = pd.DataFrame([data])
+            st.session_state.sheet_data = pd.concat([st.session_state.sheet_data, new_data], ignore_index=True)
+            st.success("Data saved successfully")
 
-    def visualizar_datos(self):
+    def visualize_data(self):
         """
-        Visualización y análisis de datos de la hoja de verificación
+        Visualize and analyze check sheet data
         """
-        st.subheader("📊 Visualización de Datos")
+        st.subheader("📊 Data Visualization")
         
-        if st.session_state.datos_hoja is not None and not st.session_state.datos_hoja.empty:
-            # Mostrar datos
-            st.dataframe(st.session_state.datos_hoja)
+        if st.session_state.sheet_data is not None and not st.session_state.sheet_data.empty:
+            # Show data
+            st.dataframe(st.session_state.sheet_data)
             
-            # Selección de columna para análisis
-            columna_analisis = st.selectbox("Seleccione columna para análisis", 
-                                            st.session_state.datos_hoja.columns)
+            # Column selection for analysis
+            column_analysis = st.selectbox("Select column for analysis", 
+                                            st.session_state.sheet_data.columns)
             
-            # Tipo de gráfico según tipo de dato
-            if pd.api.types.is_numeric_dtype(st.session_state.datos_hoja[columna_analisis]):
-                # Gráficos para datos numéricos
-                fig_hist = px.histogram(st.session_state.datos_hoja, x=columna_analisis, 
-                                        title=f'Distribución de {columna_analisis}')
+            # Chart type based on data type
+            if pd.api.types.is_numeric_dtype(st.session_state.sheet_data[column_analysis]):
+                # Histogram for numeric data
+                fig_hist = px.histogram(st.session_state.sheet_data, x=column_analysis, 
+                                        title=f'Distribution of {column_analysis}')
                 st.plotly_chart(fig_hist)
                 
-                # Estadísticas descriptivas
-                st.subheader("Estadísticas Descriptivas")
-                st.write(st.session_state.datos_hoja[columna_analisis].describe())
+                # Descriptive statistics
+                st.subheader("Descriptive Statistics")
+                st.write(st.session_state.sheet_data[column_analysis].describe())
             
-            elif pd.api.types.is_categorical_dtype(st.session_state.datos_hoja[columna_analisis]):
-                # Gráficos para datos categóricos
-                fig_pie = px.pie(st.session_state.datos_hoja, names=columna_analisis, 
-                                 title=f'Distribución de {columna_analisis}')
+            elif pd.api.types.is_categorical_dtype(st.session_state.sheet_data[column_analysis]):
+                # Pie chart for categorical data
+                fig_pie = px.pie(st.session_state.sheet_data, names=column_analysis, 
+                                 title=f'Distribution of {column_analysis}')
                 st.plotly_chart(fig_pie)
             
-            # Opciones de exportación
-            if st.button("Exportar Datos a CSV"):
-                csv = st.session_state.datos_hoja.to_csv(index=False)
+            # Export options
+            if st.button("Export Data to CSV"):
+                csv = st.session_state.sheet_data.to_csv(index=False)
                 st.download_button(
-                    label="Descargar CSV",
+                    label="Download CSV",
                     data=csv,
-                    file_name='hoja_verificacion.csv',
+                    file_name='check_sheet_data.csv',
                     mime='text/csv'
                 )
         else:
-            st.info("No hay datos para visualizar. Ingrese datos primero.")
+            st.info("No data to visualize. Please enter data first.")
 
-def hoja_verificacion():
+def check_sheet():
     """
-    Función principal para el módulo de Hoja de Verificación
+    Main function for the Check Sheet module
     """
-    st.title("📋 Hoja de Verificación - Lean Six Sigma")
+    st.title("📋 Check Sheet - Lean Six Sigma")
     
-    # Instancia de la clase HojaVerificacion
-    hv = HojaVerificacion()
+    # Instance of CheckSheet class
+    cs = CheckSheet()
     
-    # Menú de opciones
-    opcion = st.radio("Seleccione una Acción", [
-        "Crear Hoja de Verificación", 
-        "Ingresar Datos", 
-        "Visualizar y Analizar Datos"
+    # Action menu
+    action = st.radio("Select an Action", [
+        "Create Check Sheet", 
+        "Enter Data", 
+        "Visualize and Analyze Data"
     ])
     
-    # Llamar al método correspondiente según la opción
-    if opcion == "Crear Hoja de Verificación":
-        hv.crear_hoja_verificacion()
-    elif opcion == "Ingresar Datos":
-        hv.ingresar_datos()
-    elif opcion == "Visualizar y Analizar Datos":
-        hv.visualizar_datos()
+    # Call the corresponding method based on selected action
+    if action == "Create Check Sheet":
+        cs.create_check_sheet()
+    elif action == "Enter Data":
+        cs.input_data()
+    elif action == "Visualize and Analyze Data":
+        cs.visualize_data()
 
-# Punto de entrada para pruebas directas
+# Entry point for direct testing
 if __name__ == "__main__":
-    st.set_page_config(page_title="Hoja de Verificación LSS")
-    hoja_verificacion()
+    st.set_page_config(page_title="Lean Six Sigma Check Sheet")
+    check_sheet()
