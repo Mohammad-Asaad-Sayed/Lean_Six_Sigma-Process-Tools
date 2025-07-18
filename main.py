@@ -90,17 +90,17 @@ def main():
                 st.error(f"Error loading DPMO calculator: {e}")
                 st.write(f"Error details: {traceback.format_exc()}")
         elif menu == "📋 Checklist":
-            hoja_verificacion()
+            check_sheet()
         elif menu == "📊 Pareto Chart":
             load_lss_tool1_pareto()
         elif menu == "🐟 Ishikawa Diagram":
             ishikawa_page()
         elif menu == "📈 Histogram":
-            histograma()
+            histogram()
         elif menu == "🔍 Scatter Plot":
-            diagrama_dispersion()
+            scatter_plot()
         elif menu == "🔬 Stratification":
-            lss_estratificacion.ejecutar_modulo()
+            stratification_analysis()
         elif menu == ".panelControl Charts":
             load_lss_tool3_control_chart()
         elif menu == "🚪 Logout":
