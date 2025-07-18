@@ -3,20 +3,20 @@ import graphviz
 import pandas as pd
 
 def initialize_session_state():
-    """Inicializa el estado de la sesión si no está presente."""
+    """Initializes session state if not present."""
     if 'causes_data' not in st.session_state:
         st.session_state.causes_data = {
-            "Métodos": [],
-            "Maquinaria": [],
-            "Mano de obra": [],
-            "Materiales": [],
-            "Medio Ambiente": []
+            "Methods": [],
+            "Machines": [],
+            "People": [],
+            "Materials": [],
+            "Environment": []
         }
     if 'effect' not in st.session_state:
         st.session_state.effect = ""
 
 def add_cause_to_category(category, cause, whys):
-    """Agrega una causa a la categoría especificada."""
+    """Adds a cause to the specified category."""
     if cause:
         st.session_state.causes_data[category].append({
             "cause": cause,
@@ -24,19 +24,19 @@ def add_cause_to_category(category, cause, whys):
         })
 
 def create_summary_table():
-    """Crea una tabla resumen de las causas y efectos."""
+    """Creates a summary table of causes and effects."""
     data = []
     for category, items in st.session_state.causes_data.items():
         for item in items:
             data.append({
-                "Categoría": category,
-                "Causa": item["cause"],
-                "Por qués": " → ".join(item["whys"])
+                "Category": category,
+                "Cause": item["cause"],
+                "Whys": " → ".join(item["whys"])
             })
     return pd.DataFrame(data)
 
 def create_styled_graph(effect, categories):
-    """Crea un gráfico de estilo para el diagrama de Ishikawa."""
+    """Creates a styled Ishikawa diagram graph."""
     graph = graphviz.Digraph(
         graph_attr={
             'rankdir': 'LR',
@@ -49,14 +49,14 @@ def create_styled_graph(effect, categories):
     )
     
     colors = {
-        "Métodos": "#FF9999",
-        "Maquinaria": "#99FF99",
-        "Mano de obra": "#9999FF",
-        "Materiales": "#FFFF99",
-        "Medio Ambiente": "#FF99FF"
+        "Methods": "#FF9999",
+        "Machines": "#99FF99",
+        "People": "#9999FF",
+        "Materials": "#FFFF99",
+        "Environment": "#FF99FF"
     }
     
-    # Nodo principal del efecto
+    # Main effect node
     graph.node('effect', 
         effect, 
         shape='box',
@@ -66,7 +66,7 @@ def create_styled_graph(effect, categories):
         fontsize='14'
     )
     
-    # Agregar categorías y causas
+    # Add categories and causes
     for category, causes in categories.items():
         if causes:
             cat_id = f"cat_{category}"
@@ -115,72 +115,72 @@ def create_styled_graph(effect, categories):
     return graph
 
 def ishikawa_page():
-    """Función principal de la página de Ishikawa."""
-    st.title("Diagrama de Ishikawa (Causa y Efecto)")
-    st.write("### Funciones del Diagrama de Ishikawa")
+    """Main function for the Ishikawa diagram page."""
+    st.title("Ishikawa Diagram (Cause and Effect)")
+    st.write("### Ishikawa Diagram Features")
     st.write("""
-    - *Identificación de Causas*: Ayuda a identificar las diversas causas que contribuyen a un problema específico.
-    - *Visualización*: Proporciona una representación gráfica clara de las relaciones entre el efecto y sus causas.
-    - *Análisis de Problemas*: Permite analizar las causas raíz de un problema.
-    - *Organización de Ideas*: Facilita la lluvia de ideas y la discusión en grupo.
-    - *Mejora Continua*: Identifica áreas de mejora en productos, servicios o procesos.
+    - *Cause Identification*: Helps identify various causes contributing to a specific problem.
+    - *Visualization*: Provides a clear graphical representation of the relationship between the effect and its causes.
+    - *Problem Analysis*: Allows analysis of root causes of a problem.
+    - *Idea Organization*: Facilitates brainstorming and group discussion.
+    - *Continuous Improvement*: Identifies areas for improvement in products, services, or processes.
     """)
     
-    st.write("### Componentes del Diagrama de Ishikawa")
+    st.write("### Components of the Ishikawa Diagram")
     st.write("""
-    - *Efecto (Problema)*: Representa el problema que se está analizando.
-    - *Categorías de Causas*: Agrupadas en categorías como Métodos, Maquinaria, Mano de obra, Materiales y Medio Ambiente.
+    - *Effect (Problem)*: Represents the problem being analyzed.
+    - *Cause Categories*: Grouped into categories such as Methods, Machines, People, Materials, and Environment.
     """)
 
     initialize_session_state()
     
-    input_tab, diagram_tab, summary_tab = st.tabs(["📝 Entrada", "📊 Diagrama", "📋 Resumen"])
+    input_tab, diagram_tab, summary_tab = st.tabs(["📝 Input", "📊 Diagram", "📋 Summary"])
     
     with input_tab:
-        st.session_state.effect = st.text_input("Problema o Efecto Principal:", 
+        st.session_state.effect = st.text_input("Main Problem or Effect:", 
                                               value=st.session_state.effect)
         
         col1, col2 = st.columns([1, 2])
         with col1:
-            selected_category = st.selectbox("Seleccione Categoría:", 
+            selected_category = st.selectbox("Select Category:", 
                 list(st.session_state.causes_data.keys()))
         
         with col2:
-            new_cause = st.text_input(f"Nueva causa para {selected_category}:")
+            new_cause = st.text_input(f"New cause for {selected_category}:")
             if new_cause:
                 whys = []
-                st.write("5 Por qués:")
+                st.write("5 Whys:")
                 for i in range(5):
-                    why = st.text_input(f"¿Por qué? {i+1}", key=f"why_{i}")
+                    why = st.text_input(f"Why? {i+1}", key=f"why_{i}")
                     if why:  
                         whys.append(why)
-                if st.button("Agregar Causa"):
+                if st.button("Add Cause"):
                     add_cause_to_category(selected_category, new_cause, whys)
-                    st.success(f"Causa agregada a {selected_category}")
+                    st.success(f"Cause added to {selected_category}")
     
     with diagram_tab:
-        if st.button("Generar Diagrama"):
+        if st.button("Generate Diagram"):
             if st.session_state.effect:
                 try:
                     graph = create_styled_graph(st.session_state.effect, 
                                              st.session_state.causes_data)
                     st.graphviz_chart(graph)
                 except Exception as e:
-                    st.error(f"Error al generar el diagrama: {str(e)}")
+                    st.error(f"Error generating diagram: {str(e)}")
             else:
-                st.warning("Por favor, ingrese el problema o efecto principal")
+                st.warning("Please enter the main problem or effect")
     
     with summary_tab:
         df = create_summary_table()
         if not df.empty:
-            st.write("Resumen de Causas y Efectos")
+            st.write("Summary of Causes and Effects")
             category_filter = st.multiselect(
-                "Filtrar por Categoría:",
+                "Filter by Category:",
                 options=st.session_state.causes_data.keys()
             )
             
             if category_filter:
-                filtered_df = df[df['Categoría'].isin(category_filter)]
+                filtered_df = df[df['Category'].isin(category_filter)]
             else:
                 filtered_df = df
                 
@@ -188,15 +188,16 @@ def ishikawa_page():
             
             csv = filtered_df.to_csv(index=False).encode('utf-8')
             st.download_button(
-                "Descargar Resumen (CSV)",
+                "Download Summary (CSV)",
                 csv,
-                "resumen_ishikawa.csv",
+                "ishikawa_summary.csv",
                 "text/csv",
                 key='download-csv'
             )
         else:
-            st.info("No hay datos para mostrar en el resumen")
+            st.info("No data to display in the summary")
 
+# Entry point
 if __name__ == "__main__":
-    st.set_page_config(page_title="Diagrama de Ishikawa", layout="wide")
+    st.set_page_config(page_title="Ishikawa Diagram", layout="wide")
     ishikawa_page()
