@@ -9,163 +9,163 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 
-class DiagramaDispersion:
+class ScatterPlot:
     def __init__(self):
-        # Cargar datos desde la sesión
+        # Load data from session
         self.df = st.session_state.get('uploaded_data')
         
-        # Configuraciones del módulo
-        self.configuraciones = {
-            'max_columnas': 20,
-            'max_filas': 10000,
-            'tipos_datos_validos': [np.number]
+        # Module settings
+        self.settings = {
+            'max_columns': 20,
+            'max_rows': 10000,
+            'valid_data_types': [np.number]
         }
 
-    def validar_datos(self) -> bool:
+    def validate_data(self) -> bool:
         """
-        Validación integral de datos antes del análisis
+        Comprehensive data validation before analysis
         """
         if self.df is None:
-            st.error("⚠️ No hay datos cargados")
+            st.error("⚠️ No data loaded")
             return False
         
         try:
-            # Validaciones de seguridad
-            if len(self.df.columns) > self.configuraciones['max_columnas']:
-                st.warning(f"Demasiadas columnas. Máximo {self.configuraciones['max_columnas']}")
+            # Safety checks
+            if len(self.df.columns) > self.settings['max_columns']:
+                st.warning(f"Too many columns. Max {self.settings['max_columns']}")
                 return False
             
-            if len(self.df) > self.configuraciones['max_filas']:
-                st.warning(f"Demasiadas filas. Máximo {self.configuraciones['max_filas']}")
+            if len(self.df) > self.settings['max_rows']:
+                st.warning(f"Too many rows. Max {self.settings['max_rows']}")
                 return False
             
             return True
         
         except Exception as e:
-            st.error(f"Error en validación de datos: {e}")
+            st.error(f"Error in data validation: {e}")
             return False
 
-    def preparar_columnas(self) -> list:
+    def prepare_columns(self) -> list:
         """
-        Preparar columnas numéricas para análisis
+        Prepare numeric columns for analysis
         """
         try:
-            columnas_numericas = self.df.select_dtypes(include=[np.number]).columns.tolist()
+            numeric_columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
             
-            if not columnas_numericas:
-                st.warning("⚠️ No se encontraron columnas numéricas")
+            if not numeric_columns:
+                st.warning("⚠️ No numeric columns found")
                 return []
             
-            return columnas_numericas
+            return numeric_columns
         
         except Exception as e:
-            st.error(f"Error preparando columnas: {e}")
+            st.error(f"Error preparing columns: {e}")
             return []
 
-    def generar_diagrama_dispersion(self):
+    def generate_scatter_plot(self):
         """
-        Generación de diagrama de dispersión con análisis profesional
+        Generate a professional scatter plot with analysis
         """
-        st.title("🔍 Análisis de Diagrama de Dispersión")
+        st.title("🔍 Scatter Plot Analysis")
         
-        # Validaciones previas
-        if not self.validar_datos():
+        # Preliminary validations
+        if not self.validate_data():
             return
         
-        # Preparar columnas
-        columnas_numericas = self.preparar_columnas()
+        # Prepare numeric columns
+        numeric_columns = self.prepare_columns()
         
-        if len(columnas_numericas) < 2:
-            st.warning("Se necesitan al menos dos columnas numéricas para el análisis")
+        if len(numeric_columns) < 2:
+            st.warning("At least two numeric columns are required for analysis")
             return
         
-        # Configuración de título y descripción
-        titulo = st.text_input("Título del Análisis", "Diagrama de Dispersión")
-        descripcion = st.text_area("Descripción", "Análisis de relación entre variables")
-        
-        # Selección de variables
+        # Title and description
+        title = st.text_input("Analysis Title", "Scatter Plot")
+        description = st.text_area("Description", "Analyzing relationship between variables")
+
+        # Variable selection
         col1, col2 = st.columns(2)
         
         with col1:
-            variable_x = st.selectbox("Variable Eje X", columnas_numericas)
+            var_x = st.selectbox("X-axis Variable", numeric_columns)
         
         with col2:
-            variable_y = st.selectbox("Variable Eje Y", 
-                [col for col in columnas_numericas if col != variable_x])
+            var_y = st.selectbox("Y-axis Variable", 
+                [col for col in numeric_columns if col != var_x])
         
-        # Opciones adicionales
-        with st.expander("Opciones Avanzadas"):
-            color_por = st.selectbox("Colorear por", 
-                ['Ninguno'] + [col for col in self.df.columns if col not in [variable_x, variable_y]])
+        # Advanced options
+        with st.expander("Advanced Options"):
+            color_by = st.selectbox("Color by", 
+                ['None'] + [col for col in self.df.columns if col not in [var_x, var_y]])
             
-            tamaño = st.selectbox("Tamaño de puntos", 
-                ['Fijo', 'Variable'], index=0)
+            size = st.selectbox("Point Size", 
+                ['Fixed', 'Variable'], index=0)
         
-        # Generar gráfico
+        # Generate plot
         try:
-            fig = self._crear_diagrama_dispersion(
-                variable_x, 
-                variable_y, 
-                color_por if color_por != 'Ninguno' else None,
-                tamaño
+            fig = self._create_scatter_plot(
+                var_x, 
+                var_y, 
+                color_by if color_by != 'None' else None,
+                size
             )
             
-            # Mostrar gráfico
+            # Display plot
             st.plotly_chart(fig, use_container_width=True)
             
-            # Análisis estadístico
-            self._generar_analisis_estadistico(variable_x, variable_y)
+            # Statistical analysis
+            self._generate_statistical_analysis(var_x, var_y)
             
-            # Botón de exportación
-            self._exportar_resultados(
+            # Export button
+            self._export_analysis(
                 fig, 
-                titulo, 
-                descripcion, 
-                variable_x, 
-                variable_y
+                title, 
+                description, 
+                var_x, 
+                var_y
             )
             
         except Exception as e:
-            st.error(f"Error generando diagrama de dispersión: {e}")
+            st.error(f"Error generating scatter plot: {e}")
 
-    def _crear_diagrama_dispersion(self, x, y, color=None, tamaño='Fijo'):
+    def _create_scatter_plot(self, x, y, color=None, size='Fixed'):
         """
-        Crear diagrama de dispersión interactivo
+        Create an interactive scatter plot
         """
-        # Preparación de datos
-        datos = self.df[[x, y]]
+        # Prepare data
+        data = self.df[[x, y]]
         if color:
-            datos[color] = self.df[color]
+            data[color] = self.df[color]
         
-        # Configuración de tamaño
-        if tamaño == 'Fijo':
-            size = 8
+        # Size configuration
+        if size == 'Fixed':
+            point_size = 8
         else:
-            # Normalizar tamaño basado en otra variable numérica
-            size = self.df[x] / self.df[x].max() * 20
+            # Normalize size based on another numeric variable
+            point_size = self.df[x] / self.df[x].max() * 20
         
-        # Crear figura
+        # Create figure
         if color:
             fig = px.scatter(
-                datos, 
+                data, 
                 x=x, 
                 y=y, 
                 color=color,
-                title=f'Diagrama de Dispersión: {x} vs {y}',
+                title=f'Scatter Plot: {x} vs {y}',
                 labels={x: x, y: y},
-                hover_data=datos.columns
+                hover_data=data.columns
             )
         else:
             fig = px.scatter(
-                datos, 
+                data, 
                 x=x, 
                 y=y, 
-                title=f'Diagrama de Dispersión: {x} vs {y}',
+                title=f'Scatter Plot: {x} vs {y}',
                 labels={x: x, y: y}
             )
         
-        # Personalización
-        fig.update_traces(marker=dict(size=size))
+        # Customization
+        fig.update_traces(marker=dict(size=point_size))
         fig.update_layout(
             hoverlabel=dict(
                 bgcolor="white",
@@ -176,77 +176,77 @@ class DiagramaDispersion:
         
         return fig
 
-    def _generar_analisis_estadistico(self, x, y):
+    def _generate_statistical_analysis(self, x, y):
         """
-        Generar análisis estadístico del diagrama de dispersión
+        Generate statistical analysis of the scatter plot
         """
-        # Cálculo de correlación
-        correlacion = self.df[x].corr(self.df[y])
+        # Correlation calculation
+        correlation = self.df[x].corr(self.df[y])
         
-        # Tabla de métricas
-        st.subheader("📊 Análisis Estadístico")
+        # Metrics table
+        st.subheader("📊 Statistical Analysis")
         
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.metric("Correlación", f"{correlacion:.2f}")
+            st.metric("Correlation", f"{correlation:.2f}")
         
         with col2:
-            st.metric("Media X", f"{self.df[x].mean():.2f}")
+            st.metric("Mean X", f"{self.df[x].mean():.2f}")
         
         with col3:
-            st.metric("Media Y", f"{self.df[y].mean():.2f}")
+            st.metric("Mean Y", f"{self.df[y].mean():.2f}")
         
-        # Interpretación de correlación
-        interpretacion = self._interpretar_correlacion(correlacion)
-        st.info(interpretacion)
+        # Correlation interpretation
+        interpretation = self._interpret_correlation(correlation)
+        st.info(interpretation)
 
-    def _interpretar_correlacion(self, correlacion):
+    def _interpret_correlation(self, correlation):
         """
-        Interpretar el valor de correlación
+        Interpret the correlation value
         """
-        if abs(correlacion) < 0.3:
-            return f"Correlación débil ({correlacion:.2f}): No hay una relación lineal fuerte."
-        elif abs(correlacion) < 0.7:
-            return f"Correlación moderada ({correlacion:.2f}): Existe una relación lineal parcial."
+        if abs(correlation) < 0.3:
+            return f"Weak correlation ({correlation:.2f}): No strong linear relationship."
+        elif abs(correlation) < 0.7:
+            return f"Moderate correlation ({correlation:.2f}): Partial linear relationship."
         else:
-            return f"Correlación fuerte ({correlacion:.2f}): Existe una relación lineal significativa."
+            return f"Strong correlation ({correlation:.2f}): Significant linear relationship."
 
-    def _exportar_resultados(self, fig, titulo, descripcion, x, y):
+    def _export_analysis(self, fig, title, description, x, y):
         """
-        Exportar resultados del análisis
+        Export analysis results
         """
-        st.subheader("📥 Exportar Resultados")
+        st.subheader("📥 Export Analysis")
         
-        # Exportar como PDF
-        if st.button("Exportar Análisis"):
-            # Crear PDF
+        # Export as PDF
+        if st.button("Export Analysis"):
+            # Create PDF buffer
             pdf_buffer = BytesIO()
             
-            # Convertir figura Plotly a imagen
+            # Convert Plotly figure to image
             img_bytes = fig.to_image(format='png')
             
-            # Crear PDF con matplotlib
+            # Create PDF using matplotlib
             plt.figure(figsize=(10, 6))
-            plt.title(titulo)
+            plt.title(title)
             plt.imshow(plt.imread(BytesIO(img_bytes)))
             plt.axis('off')
             
-            # Guardar PDF
+            # Save PDF
             plt.savefig(pdf_buffer, format='pdf', bbox_inches='tight')
             pdf_buffer.seek(0)
             
-            # Generar enlace de descarga
+            # Generate download link
             b64 = base64.b64encode(pdf_buffer.getvalue()).decode()
-            href = f'<a href="data:application/pdf;base64,{b64}" download="analisis_dispersion.pdf">Descargar Análisis</a>'
+            href = f'<a href="data:application/pdf;base64,{b64}" download="scatter_analysis.pdf">Download Analysis</a>'
             st.markdown(href, unsafe_allow_html=True)
 
-def diagrama_dispersion():
-    """Función principal del módulo de Diagrama de Dispersión"""
-    dispersao = DiagramaDispersion()
-    dispersao.generar_diagrama_dispersion()
+def scatter_plot():
+    """Main function for the Scatter Plot module"""
+    scatter = ScatterPlot()
+    scatter.generate_scatter_plot()
 
-# Configuración de página
+# Page configuration
 if __name__ == "__main__":
-    st.set_page_config(page_title="Diagrama de Dispersión", layout="wide")
-    diagrama_dispersion()
+    st.set_page_config(page_title="Scatter Plot", layout="wide")
+    scatter_plot()
