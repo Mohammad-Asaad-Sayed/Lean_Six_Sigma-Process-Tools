@@ -7,70 +7,70 @@ import os
 def validate_login(username, password):
     users_file = 'data/users.csv'
     
-    # Verificar si el archivo existe
+    # Check if the file exists
     if not os.path.exists(users_file):
-        return False, "Archivo de usuarios no encontrado"
+        return False, "Users file not found"
     
-    # Leer archivo de usuarios
+    # Read user data
     df = pd.read_csv(users_file)
     
-    # Buscar usuario
+    # Find user
     user = df[df['username'] == username]
     
     if user.empty:
-        return False, "Usuario no encontrado"
+        return False, "User not found"
     
-    # Verificar contraseña
+    # Verify password
     stored_password = user['password_hash'].values[0]
     
     if bcrypt.checkpw(password.encode('utf-8'), stored_password.encode('utf-8')):
-        # Actualizar último inicio de sesión
+        # Update last login timestamp
         df.loc[df['username'] == username, 'last_login'] = datetime.now().isoformat()
         df.to_csv(users_file, index=False)
-        return True, "Inicio de sesión exitoso"
+        return True, "Login successful"
     
-    return False, "Contraseña incorrecta"
+    return False, "Incorrect password"
 
 def login_page():
-    st.title("Iniciar Sesión")
+    st.title("Login")
     
-    # Verificar si ya está logueado
+    # Check if user is already logged in
     if 'logged_in' not in st.session_state:
         st.session_state['logged_in'] = False
     
-    # Formulario de login
+    # Login form
     with st.form("login_form"):
-        username = st.text_input("Nombre de Usuario")
-        password = st.text_input("Contraseña", type="password")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
         
-        submit_button = st.form_submit_button("Iniciar Sesión")
+        submit_button = st.form_submit_button("Login")
         
         if submit_button:
-            # Validar campos no vacíos
+            # Validate non-empty fields
             if not username or not password:
-                st.error("Por favor, complete todos los campos")
+                st.error("Please fill in all fields")
                 return
             
-            # Intentar iniciar sesión
+            # Attempt login
             login_successful, message = validate_login(username, password)
             
             if login_successful:
-                # Establecer estado de sesión
+                # Set session state
                 st.session_state['logged_in'] = True
                 st.session_state['username'] = username
                 
-                # Mostrar mensaje de éxito
+                # Show success message
                 st.success(message)
                 
-                # Usar rerun() en lugar de experimental_rerun()
+                # Use rerun() instead of experimental_rerun()
                 st.rerun()
             else:
-                # Mostrar error de inicio de sesión
+                # Show login error
                 st.error(message)
     
-    # Opción de registro
-    st.markdown("¿No tienes una cuenta? [Regístrate aquí](/register)")
+    # Registration option
+    st.markdown("Don't have an account? [Register here](/register)")
 
-# Si se ejecuta directamente
+# Run directly
 if __name__ == "__main__":
     login_page()
