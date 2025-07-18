@@ -1,51 +1,51 @@
 import streamlit as st
 
 def render_home_page():
-    # st.title("Bienvenido a Toritos de Pucara Analytics")
+    # st.title("Welcome to Toritos de Pucara Analytics")
     
-    # Sección de descripción
+    # Description section
     st.markdown("""
-    ## Herramientas de Análisis Estadístico para Mejora de Procesos
+    ## Statistical Analysis Tools for Process Improvement
     
-    ### Nuestra Misión
-    Proporcionar herramientas avanzadas de análisis estadístico para optimizar procesos 
-    y mejorar la eficiencia operativa.
+    ### Our Mission
+    Provide advanced statistical analysis tools to optimize processes 
+    and enhance operational efficiency.
     
-    ### Características Principales
-    - 📊 Calculadora DPMO
-    - 🧩 Herramientas Lean Six Sigma
-    - 📈 Análisis de Procesos
-    - 📉 Gráficos de Control
-    - 🔍 Análisis de Capacidad
+    ### Key Features
+    - 📊 DPMO Calculator
+    - 🧩 Lean Six Sigma Tools
+    - 📈 Process Analysis
+    - 📉 Control Charts
+    - 🔍 Capability Analysis
     """)
     
-    # Columnas para características
+    # Feature columns
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.subheader("Calculadora DPMO")
-        st.write("Mide la eficiencia de tus procesos con nuestra calculadora de Defectos Por Millón de Oportunidades.")
+        st.subheader("DPMO Calculator")
+        st.write("Measure your process efficiency using our Defects Per Million Opportunities (DPMO) calculator.")
     
     with col2:
-        st.subheader("Herramientas LSS")
-        st.write("Accede a herramientas de Lean Six Sigma para análisis y mejora continua.")
+        st.subheader("LSS Tools")
+        st.write("Access Lean Six Sigma tools for analysis and continuous improvement.")
     
     with col3:
-        st.subheader("Análisis Estadístico")
-        st.write("Realiza análisis estadísticos avanzados con nuestras herramientas.")
+        st.subheader("Statistical Analysis")
+        st.write("Perform advanced statistical analysis using our built-in tools.")
     
-    # Sección de llamado a la acción
+    # Call-to-action section
     st.markdown("---")
-    st.markdown("### ¿Listo para Optimizar tus Procesos?")
+    st.markdown("### Ready to Optimize Your Processes?")
     
-    # Solo mostrar botón si no está logueado
+    # Show login/register buttons only if not logged in
     if 'logged_in' not in st.session_state or not st.session_state['logged_in']:
         st.markdown("""
-        Regístrate o inicia sesión para acceder a todas nuestras herramientas.
+        Sign up or log in to access all our tools.
         
-        [🔐 Iniciar Sesión](#) [📝 Registrarse](#)
+        [🔐 Login](#) [📝 Register](#)
         """)
 
-# Si se ejecuta directamente este archivo (para pruebas)
+# Run directly for testing
 if __name__ == "__main__":
     render_home_page()
