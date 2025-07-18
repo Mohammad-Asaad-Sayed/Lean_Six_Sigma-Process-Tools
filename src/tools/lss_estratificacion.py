@@ -8,97 +8,97 @@ from io import BytesIO
 import base64
 import seaborn as sns
 
-def lss_estratificacion():
+def stratification_analysis():
     """
-    Función principal de Estratificación que maneja todo el análisis
+    Main Stratification Analysis function that handles the full analysis
     """
-    st.title("🔬 Análisis de Estratificación")
+    st.title("🔬 Stratification Analysis")
     
-    # Cargar datos desde la sesión
+    # Load data from session
     df = st.session_state.get('uploaded_data')
     
-    # Validaciones de datos
+    # Data validations
     if df is None:
-        st.error("⚠️ No hay datos cargados")
+        st.error("⚠️ No data loaded")
         return
     
-    # Configuraciones del módulo
-    max_columnas = 20
-    max_filas = 10000
+    # Module settings
+    max_columns = 20
+    max_rows = 10000
     
-    # Validaciones de seguridad
-    if len(df.columns) > max_columnas:
-        st.warning(f"Demasiadas columnas. Máximo {max_columnas}")
+    # Safety checks
+    if len(df.columns) > max_columns:
+        st.warning(f"Too many columns. Maximum {max_columns}")
         return
     
-    if len(df) > max_filas:
-        st.warning(f"Demasiadas filas. Máximo {max_filas}")
+    if len(df) > max_rows:
+        st.warning(f"Too many rows. Maximum {max_rows}")
         return
     
-    # Preparar columnas
-    columnas_numericas = df.select_dtypes(include=[np.number]).columns.tolist()
-    columnas_categoricas = df.select_dtypes(include=['object', 'category']).columns.tolist()
+    # Prepare columns
+    numeric_columns = df.select_dtypes(include=[np.number]).columns.tolist()
+    categorical_columns = df.select_dtypes(include=['object', 'category']).columns.tolist()
     
-    # Configuración de título y descripción
-    titulo = st.text_input("Título del Análisis", "Análisis de Estratificación")
-    descripcion = st.text_area("Descripción", "Análisis detallado de estratificación de datos")
+    # Title and description input
+    title = st.text_input("Analysis Title", "Stratification Analysis")
+    description = st.text_area("Description", "Detailed stratification analysis of data")
     
-    # Selección de variables
+    # Variable selection
     col1, col2 = st.columns(2)
     
     with col1:
-        variable_categorica = st.selectbox("Variable Categórica", 
-            columnas_categoricas if columnas_categoricas else ['Sin categorías'])
+        categorical_var = st.selectbox("Categorical Variable", 
+            categorical_columns if categorical_columns else ['No categorical variables'])
     
     with col2:
-        variable_numerica = st.selectbox("Variable Numérica", 
-            columnas_numericas if columnas_numericas else ['Sin variables numéricas'])
+        numeric_var = st.selectbox("Numeric Variable", 
+            numeric_columns if numeric_columns else ['No numeric variables'])
     
-    # Validar selección de variables
-    if variable_categorica == 'Sin categorías' or variable_numerica == 'Sin variables numéricas':
-        st.warning("Seleccione variables válidas para el análisis")
+    # Validate variable selection
+    if categorical_var == 'No categorical variables' or numeric_var == 'No numeric variables':
+        st.warning("Please select valid variables for analysis")
         return
     
-    # Generar gráficos
+    # Generate visualizations
     try:
         # Boxplot
         fig1 = px.box(
             df, 
-            x=variable_categorica, 
-            y=variable_numerica,
-            title=f'Distribución de {variable_numerica} por {variable_categorica}'
+            x=categorical_var, 
+            y=numeric_var,
+            title=f'Distribution of {numeric_var} by {categorical_var}'
         )
         
-        # Gráfico de barras con agregación
-        datos_agregados = df.groupby(variable_categorica)[variable_numerica].agg(['mean', 'count']).reset_index()
+        # Bar chart with aggregation
+        aggregated_data = df.groupby(categorical_var)[numeric_var].agg(['mean', 'count']).reset_index()
         
         fig2 = go.Figure()
         fig2.add_trace(go.Bar(
-            x=datos_agregados[variable_categorica],
-            y=datos_agregados['mean'],
-            name='Promedio',
+            x=aggregated_data[categorical_var],
+            y=aggregated_data['mean'],
+            name='Mean',
             marker_color='blue'
         ))
         fig2.add_trace(go.Scatter(
-            x=datos_agregados[variable_categorica],
-            y=datos_agregados['count'],
-            name='Conteo',
+            x=aggregated_data[categorical_var],
+            y=aggregated_data['count'],
+            name='Count',
             yaxis='y2',
             mode='lines+markers',
             marker_color='red'
         ))
         fig2.update_layout(
-            title=f'Análisis de {variable_numerica} por {variable_categorica}',
-            xaxis_title=variable_categorica,
-            yaxis_title=f'Promedio de {variable_numerica}',
+            title=f'Analysis of {numeric_var} by {categorical_var}',
+            xaxis_title=categorical_var,
+            yaxis_title=f'Mean of {numeric_var}',
             yaxis2=dict(
-                title='Conteo',
+                title='Count',
                 overlaying='y',
                 side='right'
             )
         )
         
-        # Mostrar gráficos
+        # Display charts
         col1, col2 = st.columns(2)
         
         with col1:
@@ -107,36 +107,36 @@ def lss_estratificacion():
         with col2:
             st.plotly_chart(fig2, use_container_width=True)
         
-        # Tabla resumen
-        st.subheader("📊 Tabla Resumen")
-        resumen = df.groupby(variable_categorica)[variable_numerica].agg([
+        # Summary table
+        st.subheader("📊 Summary Table")
+        summary = df.groupby(categorical_var)[numeric_var].agg([
             'count', 'mean', 'median', 'min', 'max', 'std'
         ]).round(2)
-        st.dataframe(resumen)
+        st.dataframe(summary)
         
-        # Interpretación de resultados
-        st.subheader("🔍 Interpretación de Resultados")
-        interpretacion = f"""
-        Análisis de Estratificación de {variable_numerica} por {variable_categorica}:
+        # Interpretation of results
+        st.subheader("🔍 Results Interpretation")
+        interpretation = f"""
+        Stratification Analysis of {numeric_var} by {categorical_var}:
         
-        - Categorías Identificadas: {len(resumen)} 
-        - Distribución:
-        {resumen.to_string()}
+        - Identified Categories: {len(summary)} 
+        - Distribution:
+        {summary.to_string()}
         
-        Observaciones Principales:
-        - Mayor concentración: {resumen['count'].idxmax()} 
-        - Promedio más alto: {resumen['mean'].idxmax()}
+        Key Observations:
+        - Highest concentration: {summary['count'].idxmax()} 
+        - Highest average: {summary['mean'].idxmax()}
         """
-        st.info(interpretacion)
+        st.info(interpretation)
         
-        # Exportación
-        st.subheader("📥 Exportar Resultados")
-        if st.button("Exportar Análisis"):
-            # Lógica de exportación similar a versiones anteriores
+        # Export results
+        st.subheader("📥 Export Analysis")
+        if st.button("Export Analysis"):
+            # Export logic similar to previous versions
             plt.figure(figsize=(15, 10))
-            plt.suptitle(titulo, fontsize=16)
+            plt.suptitle(title, fontsize=16)
             
-            # Añadir gráficos al PDF
+            # Add charts to PDF
             plt.subplot(1, 2, 1)
             img_bytes1 = fig1.to_image(format='png')
             plt.imshow(plt.imread(BytesIO(img_bytes1)))
@@ -147,19 +147,19 @@ def lss_estratificacion():
             plt.imshow(plt.imread(BytesIO(img_bytes2)))
             plt.axis('off')
             
-            # Guardar y generar enlace de descarga
+            # Save and generate download link
             pdf_buffer = BytesIO()
             plt.savefig(pdf_buffer, format='pdf', bbox_inches='tight')
             pdf_buffer.seek(0)
             
             b64 = base64.b64encode(pdf_buffer.getvalue()).decode()
-            href = f'<a href="data:application/pdf;base64,{b64}" download="analisis_estratificacion.pdf">Descargar Análisis</a>'
+            href = f'<a href="application/pdf;base64,{b64}" download="stratification_analysis.pdf">Download Analysis</a>'
             st.markdown(href, unsafe_allow_html=True)
         
     except Exception as e:
-        st.error(f"Error generando análisis de estratificación: {e}")
+        st.error(f"Error generating stratification analysis: {e}")
 
-# Configuración de página
+# Page configuration
 if __name__ == "__main__":
-    st.set_page_config(page_title="Análisis de Estratificación", layout="wide")
-    lss_estratificacion()
+    st.set_page_config(page_title="Stratification Analysis", layout="wide")
+    stratification_analysis()
