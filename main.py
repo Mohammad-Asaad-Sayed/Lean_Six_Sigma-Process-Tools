@@ -19,13 +19,13 @@ from src.data_management.upload import upload_data_page
 
 # Import dashboard
 from src.pages.dashboard import dashboard
-from src.tools.pareto_tool import load_pareto_analysis  # Pareto tool
-from src.tools.control_chart_tool import load_control_chart_analysis  # Control chart tool
-from src.tools.check_sheet import check_sheet  # Check sheet module
+from src.tools.pareto_tool import load_lss_tool1_pareto  # Pareto tool
+from src.tools.control_chart_tool import load_lss_tool3_control_chart  # Control chart tool
+from src.tools.check_sheet import hoja_verificacion  # Check sheet module
 from src.tools.ishikawa_diagram import ishikawa_page  # Ishikawa diagram
-from src.tools.histogram_analysis import histogram_analysis  # Histogram analysis
-from src.tools.scatter_plot import scatter_plot_analysis  # Scatter plot analysis
-from src.tools.stratification_analysis import stratification_analysis  # Stratification analysis
+from src.tools.histogram_analysis import histograma  # Histogram analysis
+from src.tools.scatter_plot import diagrama_dispersion  # Scatter plot analysis
+from src.tools.stratification_analysis import lss_estratificacion  # Stratification analysis
 
 
 # Page configuration
