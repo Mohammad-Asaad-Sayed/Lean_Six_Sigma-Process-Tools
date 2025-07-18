@@ -7,137 +7,137 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from typing import List, Optional
 
-class HistogramaLSS:
+class StatisticalHistogram:
     def __init__(self):
         self.df = st.session_state.get('uploaded_data')
         
-        # Configuraciones de seguridad y validación
-        self.configuraciones = {
-            'max_columnas': 20,
-            'max_filas': 10000,
-            'tipos_datos_validos': [np.number, 'object', 'category']
+        # Safety and validation settings
+        self.settings = {
+            'max_columns': 20,
+            'max_rows': 10000,
+            'valid_data_types': [np.number, 'object', 'category']
         }
 
-    def validar_datos(self) -> bool:
+    def validate_data(self) -> bool:
         """
-        Validación integral de datos antes del análisis
+        Comprehensive data validation before analysis
         """
         if self.df is None:
-            st.error("⚠️ No hay datos cargados")
+            st.error("⚠️ No data loaded")
             return False
         
         try:
-            # Validaciones de seguridad
-            if len(self.df.columns) > self.configuraciones['max_columnas']:
-                st.warning(f"Demasiadas columnas. Máximo {self.configuraciones['max_columnas']}")
+            # Safety checks
+            if len(self.df.columns) > self.settings['max_columns']:
+                st.warning(f"Too many columns. Max {self.settings['max_columns']}")
                 return False
             
-            if len(self.df) > self.configuraciones['max_filas']:
-                st.warning(f"Demasiadas filas. Máximo {self.configuraciones['max_filas']}")
+            if len(self.df) > self.settings['max_rows']:
+                st.warning(f"Too many rows. Max {self.settings['max_rows']}")
                 return False
             
             return True
         
         except Exception as e:
-            st.error(f"Error en validación de datos: {e}")
+            st.error(f"Error in data validation: {e}")
             return False
 
-    def preparar_columnas(self) -> tuple:
+    def prepare_columns(self) -> tuple:
         """
-        Preparar columnas para análisis con manejo de excepciones
+        Prepare columns for analysis with exception handling
         """
         try:
-            columnas_numericas = self.df.select_dtypes(include=[np.number]).columns.tolist()
-            columnas_categoricas = self.df.select_dtypes(include=['object', 'category']).columns.tolist()
+            numeric_columns = self.df.select_dtypes(include=[np.number]).columns.tolist()
+            categorical_columns = self.df.select_dtypes(include=['object', 'category']).columns.tolist()
             
-            if not columnas_numericas:
-                st.warning("⚠️ No se encontraron columnas numéricas")
+            if not numeric_columns:
+                st.warning("⚠️ No numeric columns found")
                 return [], []
             
-            return columnas_numericas, columnas_categoricas
+            return numeric_columns, categorical_columns
         
         except Exception as e:
-            st.error(f"Error preparando columnas: {e}")
+            st.error(f"Error preparing columns: {e}")
             return [], []
 
-    def generar_histograma_profesional(self):
+    def generate_professional_histogram(self):
         """
-        Generación de histograma con validaciones y análisis profesional
+        Generate histogram with validations and professional analysis
         """
-        st.title("📊 Análisis Estadístico Profesional")
+        st.title("📊 Professional Statistical Analysis")
         
-        # Validaciones previas
-        if not self.validar_datos():
+        # Preliminary validations
+        if not self.validate_data():
             return
         
-        # Preparar columnas
-        columnas_numericas, columnas_categoricas = self.preparar_columnas()
+        # Prepare columns
+        numeric_columns, categorical_columns = self.prepare_columns()
         
-        if not columnas_numericas:
-            st.warning("No hay datos numéricos para analizar")
+        if not numeric_columns:
+            st.warning("No numeric data available for analysis")
             return
         
-        # Selector de variable
-        variable = st.selectbox("Seleccione Variable para Análisis", columnas_numericas)
+        # Variable selector
+        variable = st.selectbox("Select Variable for Analysis", numeric_columns)
         
         try:
-            # Generación de histograma
-            fig = self._crear_histograma_detallado(variable)
+            # Generate histogram
+            fig = self._create_detailed_histogram(variable)
             
-            # Mostrar gráfico
+            # Display chart
             st.plotly_chart(fig)
             
-            # Tabla resumen y análisis
-            self._generar_tabla_resumen(variable)
+            # Summary table and analysis
+            self._generate_summary_table(variable)
             
         except Exception as e:
-            st.error(f"Error generando histograma: {e}")
+            st.error(f"Error generating histogram: {e}")
 
-    def _crear_histograma_detallado(self, variable: str):
+    def _create_detailed_histogram(self, variable: str):
         """
-        Crear histograma con detalles profesionales
+        Create detailed histogram with professional annotations
         """
-        datos = self.df[variable]
+        data = self.df[variable]
         
-        # Cálculos estadísticos
-        media = datos.mean()
-        mediana = datos.median()
-        desv_std = datos.std()
+        # Statistical calculations
+        mean = data.mean()
+        median = data.median()
+        std_dev = data.std()
         
-        # Histograma con distribución
+        # Histogram with distribution
         fig = go.Figure()
         
-        # Histograma base
+        # Base histogram
         fig.add_trace(go.Histogram(
-            x=datos, 
-            name='Distribución',
+            x=data, 
+            name='Distribution',
             marker_color='blue',
             opacity=0.7
         ))
         
-        # Línea de media
+        # Mean line
         fig.add_shape(
             type='line', 
-            x0=media, 
-            x1=media, 
+            x0=mean, 
+            x1=mean, 
             y0=0, 
             y1=1, 
             yref='paper',
             line=dict(color='red', width=2, dash='dash')
         )
         
-        # Configuraciones adicionales
+        # Additional settings
         fig.update_layout(
-            title=f'Análisis Detallado de {variable}',
+            title=f'Detailed Analysis of {variable}',
             xaxis_title=variable,
-            yaxis_title='Frecuencia',
+            yaxis_title='Frequency',
             annotations=[
                 dict(
-                    x=media, 
+                    x=mean, 
                     y=1.1, 
                     xref='x', 
                     yref='paper',
-                    text=f'Media: {media:.2f}',
+                    text=f'Mean: {mean:.2f}',
                     showarrow=True
                 )
             ]
@@ -145,47 +145,47 @@ class HistogramaLSS:
         
         return fig
 
-    def _generar_tabla_resumen(self, variable: str):
+    def _generate_summary_table(self, variable: str):
         """
-        Generar tabla resumen con interpretaciones
+        Generate summary table with interpretations
         """
-        datos = self.df[variable]
+        data = self.df[variable]
         
-        # Métricas estadísticas
-        metricas = {
-            'Media': datos.mean(),
-            'Mediana': datos.median(),
-            'Desviación Estándar': datos.std(),
-            'Mínimo': datos.min(),
-            'Máximo': datos.max(),
-            'Rango': datos.max() - datos.min(),
-            'Varianza': datos.var()
+        # Statistical metrics
+        metrics = {
+            'Mean': data.mean(),
+            'Median': data.median(),
+            'Standard Deviation': data.std(),
+            'Minimum': data.min(),
+            'Maximum': data.max(),
+            'Range': data.max() - data.min(),
+            'Variance': data.var()
         }
         
-        # Tabla resumen
-        st.subheader("📋 Tabla Resumen Estadístico")
-        df_resumen = pd.DataFrame.from_dict(metricas, orient='index', columns=['Valor'])
-        st.dataframe(df_resumen)
+        # Summary table
+        st.subheader("📋 Summary Statistics")
+        summary_df = pd.DataFrame.from_dict(metrics, orient='index', columns=['Value'])
+        st.dataframe(summary_df)
         
-        # Interpretaciones
-        st.subheader("🔍 Interpretación")
+        # Interpretations
+        st.subheader("🔍 Interpretation")
         
-        # Interpretación básica
-        interpretacion = f"""
-        Análisis de {variable}:
-        - Valor Central: La media de {metricas['Media']:.2f} indica el punto central de distribución.
-        - Variabilidad: Desviación estándar de {metricas['Desviación Estándar']:.2f} sugiere dispersión de datos.
-        - Rango: Varía entre {metricas['Mínimo']:.2f} y {metricas['Máximo']:.2f}.
+        # Basic interpretation
+        interpretation = f"""
+        Analysis of {variable}:
+        - Central Value: The mean of {metrics['Mean']:.2f} indicates the central tendency of the distribution.
+        - Variability: A standard deviation of {metrics['Standard Deviation']:.2f} suggests the spread of data.
+        - Range: It varies between {metrics['Minimum']:.2f} and {metrics['Maximum']:.2f}.
         """
         
-        st.info(interpretacion)
+        st.info(interpretation)
 
-def histograma():
-    """Función principal del módulo de Histograma"""
-    hist = HistogramaLSS()
-    hist.generar_histograma_profesional()
+def histogram():
+    """Main function for the Histogram module"""
+    hist = StatisticalHistogram()
+    hist.generate_professional_histogram()
 
-# Configuración de página
+# Page configuration
 if __name__ == "__main__":
-    st.set_page_config(page_title="Análisis Estadístico", layout="wide")
-    histograma()
+    st.set_page_config(page_title="Statistical Analysis", layout="wide")
+    histogram()
