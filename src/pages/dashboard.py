@@ -10,69 +10,69 @@ import base64
 
 from src.data_management.data_session import DataSession
 
-class DashboardPersonalizado:
+class CustomDashboard:
     def __init__(self, df):
         self.df = df
         self.variables = list(df.columns)
         
-        # Valores por defecto
-        self.titulo = "Dashboard de Análisis de Producción"
-        self.descripcion = "Análisis detallado de métricas"
-        self.variables_seleccionadas = self.variables[2:4]  # Seleccionar primeras 3 variables
+        # Default values
+        self.title = "Production Analysis Dashboard"
+        self.description = "Detailed metrics analysis"
+        self.selected_variables = self.variables[2:4]  # Select first 2 variables
     
-    def configurar_dashboard(self):
-        """Modal de configuración de dashboard"""
-        with st.expander("🔧 Configurar Dashboard"):
-            self.titulo = st.text_input(
-                "Título del Dashboard", 
-                value=self.titulo
+    def configure_dashboard(self):
+        """Modal for dashboard configuration"""
+        with st.expander("🔧 Configure Dashboard"):
+            self.title = st.text_input(
+                "Dashboard Title", 
+                value=self.title
             )
-            self.descripcion = st.text_area(
-                "Descripción", 
-                value=self.descripcion
+            self.description = st.text_area(
+                "Description", 
+                value=self.description
             )
     
-    def seleccionar_variables(self):
-        """Selector dinámico de variables"""
-        with st.sidebar.expander("📊 Selección de Variables"):
-            self.variables_seleccionadas = st.multiselect(
-                "Seleccione variables para análisis",
+    def select_variables(self):
+        """Dynamic variable selector"""
+        with st.sidebar.expander("📊 Variable Selection"):
+            self.selected_variables = st.multiselect(
+                "Select variables for analysis",
                 self.variables,
-                default=self.variables_seleccionadas
+                default=self.selected_variables
             )
     
-    def generar_kpis(self):
-        """Generación dinámica de KPIs"""
-        st.header("🎯 Indicadores Clave (KPIs)")
+    def generate_kpis(self):
+        """Dynamic generation of KPIs"""
+        st.header("🎯 Key Performance Indicators (KPIs)")
         
-        kpi_cols = st.columns(len(self.variables_seleccionadas))
+        kpi_cols = st.columns(len(self.selected_variables))
         
-        for i, variable in enumerate(self.variables_seleccionadas):
+        for i, variable in enumerate(self.selected_variables):
             with kpi_cols[i]:
-                valor_medio = self.df[variable].mean()
-                valor_min = self.df[variable].min()
-                valor_max = self.df[variable].max()
+                mean_value = self.df[variable].mean()
+                min_value = self.df[variable].min()
+                max_value = self.df[variable].max()
                 
                 st.metric(
                     label=f"📈 {variable}", 
-                    value=f"{valor_medio:.2f}",
-                    delta=f"Min: {valor_min:.2f} | Max: {valor_max:.2f}"
+                    value=f"{mean_value:.2f}",
+                    delta=f"Min: {min_value:.2f} | Max: {max_value:.2f}"
                 )
     
-    def graficos_control(self):
-        """Gráficos de control para variables seleccionadas"""
-        st.header("🔍 Gráficos de Control")
+    def control_plots(self):
+        """Control charts for selected variables"""
+        st.header("🔍 Control Charts")
         
-        for variable in self.variables_seleccionadas:
-            # Gráfico de línea con límites de control
+        for variable in self.selected_variables:
+            # Line chart with control limits
             fig = px.line(
                 self.df, 
                 y=variable, 
-                title=f'Gráfico de Control - {variable}',
-                labels={'index': 'Observaciones', 'value': variable}
+                title=f'Control Chart - {variable}',
+                labels={'index': 'Observations', 'value': variable}
             )
             
-            # Añadir bandas de control
+            # Add control bands
             fig.add_hrect(
                 y0=self.df[variable].mean() - self.df[variable].std(), 
                 y1=self.df[variable].mean() + self.df[variable].std(), 
@@ -84,71 +84,71 @@ class DashboardPersonalizado:
             
             st.plotly_chart(fig)
     
-    def graficos_distribucion(self):
-        """Gráficos de distribución"""
-        st.header("📊 Distribución de Variables")
+    def distribution_plots(self):
+        """Distribution charts"""
+        st.header("📊 Variable Distribution")
         
-        for variable in self.variables_seleccionadas:
-            # Histograma
+        for variable in self.selected_variables:
+            # Histogram with marginal boxplot
             fig = px.histogram(
                 self.df, 
                 x=variable, 
-                title=f'Distribución de {variable}',
-                marginal='box'  # Añade un boxplot al margen
+                title=f'Distribution of {variable}',
+                marginal='box'
             )
             st.plotly_chart(fig)
     
-    def exportar_pdf(self):
-        """Modal de exportación a PDF"""
-        with st.expander("📄 Exportar Dashboard"):
-            nombre_archivo = st.text_input(
-                "Nombre del archivo PDF", 
-                value="dashboard_analisis"
+    def export_to_pdf(self):
+        """Export dashboard to PDF modal"""
+        with st.expander("📄 Export Dashboard"):
+            filename = st.text_input(
+                "PDF File Name", 
+                value="analysis_dashboard"
             )
             
-            if st.button("Generar PDF"):
-                # Implementación básica de exportación a PDF
+            if st.button("Generate PDF"):
+                # Basic PDF export implementation
                 buffer = BytesIO()
                 c = canvas.Canvas(buffer, pagesize=letter)
                 width, height = letter
                 
-                # Título
+                # Title
                 c.setFont("Helvetica-Bold", 16)
-                c.drawString(inch, height - inch, self.titulo)
+                c.drawString(inch, height - inch, self.title)
                 
-                # Descripción
+                # Description
                 c.setFont("Helvetica", 12)
-                c.drawString(inch, height - (inch * 1.5), self.descripcion)
+                c.drawString(inch, height - (inch * 1.5), self.description)
                 
                 c.save()
                 
                 pdf_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                href = f'<a href="data:application/pdf;base64,{pdf_base64}" download="{nombre_archivo}.pdf">Descargar PDF</a>'
+                href = f'<a href="data:application/pdf;base64,{pdf_base64}" download="{filename}.pdf">Download PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
     
     def render(self):
-        """Renderizar dashboard completo"""
-        st.title(self.titulo)
-        st.write(self.descripcion)
+        """Render complete dashboard"""
+        st.title(self.title)
+        st.write(self.description)
         
-        self.generar_kpis()
-        self.graficos_control()
-        self.graficos_distribucion()
-        self.exportar_pdf()
+        self.generate_kpis()
+        self.control_plots()
+        self.distribution_plots()
+        self.export_to_pdf()
 
 def dashboard():
-    """Función principal del dashboard"""
-    # Recuperar DataFrame de sesión
+    """Main dashboard function"""
+    # Retrieve DataFrame from session
     df = DataSession.get_dataframe()
     
     if df is not None:
-        dashboard_instance = DashboardPersonalizado(df)
+        dashboard_instance = CustomDashboard(df)
         
-        # Configuraciones
-        dashboard_instance.configurar_dashboard()
-        dashboard_instance.seleccionar_variables()
+        # Configuration
+        dashboard_instance.configure_dashboard()
+        dashboard_instance.select_variables()
         
-        # Renderizar
+        # Render dashboard
         dashboard_instance.render()
     else:
-        st.warning("No se ha cargado ningún conjunto de datos. Por favor, cargue datos primero.")
+        st.warning("No dataset has been uploaded. Please upload data first.")
