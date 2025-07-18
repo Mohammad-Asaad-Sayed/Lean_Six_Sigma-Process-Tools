@@ -25,7 +25,7 @@ from src.tools.check_sheet import check_sheet  # Check sheet module
 from src.tools.ishikawa_diagram import ishikawa_page  # Ishikawa diagram
 from src.tools.histogram_analysis import histogram  # Histogram analysis
 from src.tools.scatter_plot import scatter_plot  # Scatter plot analysis
-from src.tools.stratification_analysis import lss_estratificacion  # Stratification analysis
+from src.tools.stratification_analysis import stratification_analysis  # Stratification analysis
 
 
 # Page configuration
