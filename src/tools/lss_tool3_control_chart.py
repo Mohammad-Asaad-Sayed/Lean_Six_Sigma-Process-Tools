@@ -17,33 +17,33 @@ class ControlChartAnalyzer:
         self.numeric_columns = dataframe.select_dtypes(include=[np.number]).columns.tolist()
         self.categorical_columns = dataframe.select_dtypes(include=['object']).columns.tolist()
 
-    def calcular_limites_control_xbarra(self, variable):
+    def calculate_xbar_control_limits(self, variable):
         """
-        Calcula límites de control para gráfico X-barra
+        Calculates control limits for X-bar control chart
         """
-        datos = self.df[variable]
-        media = datos.mean()
-        desviacion = datos.std()
+        data = self.df[variable]
+        mean = data.mean()
+        std_dev = data.std()
         
-        # Límites de control clásicos (3-sigma)
-        lim_superior = media + 3 * (desviacion / np.sqrt(len(datos)))
-        lim_inferior = media - 3 * (desviacion / np.sqrt(len(datos)))
+        # Classic 3-sigma control limits
+        upper_limit = mean + 3 * (std_dev / np.sqrt(len(data)))
+        lower_limit = mean - 3 * (std_dev / np.sqrt(len(data)))
         
         return {
-            'media': media,
-            'limite_superior': lim_superior,
-            'limite_inferior': lim_inferior
+            'mean': mean,
+            'upper_limit': upper_limit,
+            'lower_limit': lower_limit
         }
 
-    def generar_grafico_control_xbarra(self, variable):
+    def generate_xbar_control_chart(self, variable):
         """
-        Genera gráfico de control X-barra interactivo
+        Generates interactive X-bar control chart
         """
-        limites = self.calcular_limites_control_xbarra(variable)
+        limits = self.calculate_xbar_control_limits(variable)
         
         fig = go.Figure()
         
-        # Puntos de datos
+        # Data points
         fig.add_trace(go.Scatter(
             x=self.df.index, 
             y=self.df[variable],
@@ -51,154 +51,160 @@ class ControlChartAnalyzer:
             name=f'{variable}',
             marker=dict(
                 color=self.df[variable].apply(
-                    lambda x: 'red' if x > limites['limite_superior'] or x < limites['limite_inferior'] else 'blue'
+                    lambda x: 'red' if x > limits['upper_limit'] or x < limits['lower_limit'] else 'blue'
                 )
             )
         ))
         
-        # Línea de media
+        # Mean line
         fig.add_trace(go.Scatter(
             x=self.df.index, 
-            y=[limites['media']] * len(self.df),
+            y=[limits['mean']] * len(self.df),
             mode='lines',
-            name='Media',
+            name='Mean',
             line=dict(color='green', dash='dash')
         ))
         
-        # Límites de control
+        # Control limits
         fig.add_trace(go.Scatter(
             x=self.df.index, 
-            y=[limites['limite_superior']] * len(self.df),
+            y=[limits['upper_limit']] * len(self.df),
             mode='lines',
-            name='Límite Superior',
+            name='Upper Limit',
             line=dict(color='red', dash='dot')
         ))
         
         fig.add_trace(go.Scatter(
             x=self.df.index, 
-            y=[limites['limite_inferior']] * len(self.df),
+            y=[limits['lower_limit']] * len(self.df),
             mode='lines',
-            name='Límite Inferior',
+            name='Lower Limit',
             line=dict(color='red', dash='dot')
         ))
         
         fig.update_layout(
-            title=f'Gráfico de Control X-barra para {variable}',
-            xaxis_title='Muestra',
-            yaxis_title='Valor'
+            title=f'X-bar Control Chart for {variable}',
+            xaxis_title='Sample',
+            yaxis_title='Value'
         )
         
-        return fig, limites
+        return fig, limits
 
-    def interpretar_grafico_control(self, variable, limites):
+    def interpret_control_chart(self, variable, limits):
         """
-        Genera interpretación contextualizada
+        Generates contextualized interpretation of the control chart
         """
-        fuera_control = self.df[
-            (self.df[variable] > limites['limite_superior']) | 
-            (self.df[variable] < limites['limite_inferior'])
+        out_of_control = self.df[
+            (self.df[variable] > limits['upper_limit']) | 
+            (self.df[variable] < limits['lower_limit'])
         ]
         
-        interpretacion = [
-            f"Análisis de Control de Calidad para {variable}:",
-            f"Media: {limites['media']:.2f}",
-            f"Límite Superior de Control: {limites['limite_superior']:.2f}",
-            f"Límite Inferior de Control: {limites['limite_inferior']:.2f}",
-            f"Número de muestras fuera de control: {len(fuera_control)}"
+        interpretation = [
+            f"Quality Control Analysis for {variable}:",
+            f"Mean: {limits['mean']:.2f}",
+            f"Upper Control Limit: {limits['upper_limit']:.2f}",
+            f"Lower Control Limit: {limits['lower_limit']:.2f}",
+            f"Number of out-of-control samples: {len(out_of_control)}"
         ]
         
-        if len(fuera_control) > 0:
-            interpretacion.append("ALERTA: Existen muestras fuera de los límites de control")
+        if len(out_of_control) > 0:
+            interpretation.append("ALERT: There are samples outside the control limits")
         
-        return interpretacion
+        return interpretation
 
-    def exportar_pdf(self, fig, variable, limites, interpretacion):
+    def export_to_pdf(self, fig, variable, limits, interpretation):
         """
-        Exporta análisis a PDF
+        Exports the analysis to PDF
         """
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
-        elementos = []
+        elements = []
         
-        # Estilos
-        estilos = getSampleStyleSheet()
+        # Styles
+        styles = getSampleStyleSheet()
         
-        # Título
-        elementos.append(Paragraph(f"Análisis de Control de Calidad - {variable}", estilos['Title']))
+        # Title
+        elements.append(Paragraph(f"Quality Control Analysis - {variable}", styles['Title']))
         
-        # Guardar gráfico como imagen
+        # Save chart as image
         img_buffer = io.BytesIO()
         fig.write_image(img_buffer, format='png')
         img_buffer.seek(0)
         img_base64 = base64.b64encode(img_buffer.getvalue()).decode()
         
-        # Imagen
-        from reportlab.platypus import Image
+        # Image
         img_path = f"data:image/png;base64,{img_base64}"
-        elementos.append(Image(img_path, width=500, height=300))
+        from reportlab.platypus import Image
+        elements.append(Image(img_path, width=500, height=300))
         
-        # Interpretación
-        elementos.append(Paragraph("Interpretación", estilos['Heading2']))
-        for linea in interpretacion:
-            elementos.append(Paragraph(linea, estilos['Normal']))
+        # Interpretation
+        elements.append(Paragraph("Interpretation", styles['Heading2']))
+        for line in interpretation:
+            elements.append(Paragraph(line, styles['Normal']))
         
-        # Tabla de Límites
-        datos_tabla = [
-            ['Métrica', 'Valor'],
-            ['Media', f"{limites['media']:.2f}"],
-            ['Límite Superior', f"{limites['limite_superior']:.2f}"],
-            ['Límite Inferior', f"{limites['limite_inferior']:.2f}"]
+        # Limits Table
+        table_data = [
+            ['Metric', 'Value'],
+            ['Mean', f"{limits['mean']:.2f}"],
+            ['Upper Limit', f"{limits['upper_limit']:.2f}"],
+            ['Lower Limit', f"{limits['lower_limit']:.2f}"]
         ]
-        tabla = Table(datos_tabla)
-        tabla.setStyle(TableStyle([
+        table = Table(table_data)
+        table.setStyle(TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.grey),
             ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('GRID', (0,0), (-1,-1), 1, colors.black)
         ]))
-        elementos.append(tabla)
+        elements.append(table)
         
-        doc.build(elementos)
+        doc.build(elements)
         return buffer.getvalue()
 
+
 def lss_tool3_control_chart_page():
-    st.title("🔍 Gráficos de Control de Calidad")
+    st.title("🔍 Quality Control Charts")
     
-    # Verificar datos cargados
+    # Check if data is loaded
     if 'uploaded_data' not in st.session_state:
-        st.warning("Por favor, cargue un conjunto de datos primero.")
+        st.warning("Please load a dataset first.")
         return
     
     df = st.session_state['uploaded_data']
     
-    # Instanciar analizador
-    analizador = ControlChartAnalyzer(df)
+    # Instantiate analyzer
+    analyzer = ControlChartAnalyzer(df)
     
-    # Selección de variables
+    # Variable selection
     variable = st.selectbox(
-        "Seleccione Variable para Análisis de Control",
-        options=analizador.numeric_columns
+        "Select Variable for Control Analysis",
+        options=analyzer.numeric_columns
     )
     
-    # Generar gráfico
-    fig, limites = analizador.generar_grafico_control_xbarra(variable)
+    # Generate chart
+    fig, limits = analyzer.generate_xbar_control_chart(variable)
     
-    # Mostrar gráfico
+    # Display chart
     st.plotly_chart(fig)
     
-    # Interpretación
-    interpretacion = analizador.interpretar_grafico_control(variable, limites)
-    st.info("\n".join(interpretacion))
+    # Interpretation
+    interpretation = analyzer.interpret_control_chart(variable, limits)
+    st.info("\n".join(interpretation))
     
-    # Botón de exportación
-    if st.button("Exportar Análisis a PDF"):
-        pdf_data = analizador.exportar_pdf(fig, variable, limites, interpretacion)
+    # Export button
+    if st.button("Export Analysis to PDF"):
+        pdf_data = analyzer.export_to_pdf(fig, variable, limits, interpretation)
         st.download_button(
-            label="Descargar Informe PDF",
+            label="Download PDF Report",
             data=pdf_data,
-            file_name=f"control_calidad_{variable}.pdf",
+            file_name=f"quality_control_{variable}.pdf",
             mime="application/pdf"
         )
 
 def load_lss_tool3_control_chart():
     lss_tool3_control_chart_page()
+
+
+if __name__ == "__main__":
+    st.set_page_config(page_title="Quality Control Chart", layout="wide")
+    load_lss_tool3_control_chart()
